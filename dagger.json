@@ -1,0 +1,6 @@
+{
+  "name": "symfony-sample-app",
+  "engineVersion": "v0.15.3",
+  "sdk": "php",
+  "source": ".dagger"
+}
