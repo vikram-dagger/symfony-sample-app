@@ -48,7 +48,7 @@ class SymfonySampleApp
     }
 
     #[DaggerFunction]
-    #[Doc('Returns the result of unit tests')]
+    #[Doc('Returns the result of unit tests and static analysis')]
     public function test(
       #[DefaultPath(".")]
       Directory $source,
