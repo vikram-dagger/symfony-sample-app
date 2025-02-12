@@ -6,6 +6,7 @@ namespace DaggerModule;
 
 use Dagger\Attribute\DaggerFunction;
 use Dagger\Attribute\DaggerObject;
+use Dagger\Attribute\DefaultPath;
 use Dagger\Attribute\Doc;
 use Dagger\Container;
 use Dagger\Directory;
@@ -71,7 +72,6 @@ class SymfonySampleApp
             ->withServiceBinding('db', $mariadb)
             // set env=test
             ->withEnvVariable('APP_ENV', 'test')
-            ->terminal()
             // populate db with test data
             ->withExec(['./bin/console', 'doctrine:schema:drop', '--force'])
             ->withExec(['./bin/console', 'doctrine:schema:create'])
