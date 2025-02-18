@@ -17,17 +17,23 @@ use function Dagger\dag;
 #[Doc('A generated module for SymfonySampleApp functions')]
 class SymfonySampleApp
 {
+
+  #[DaggerFunction]
+  public function __construct(
+      #[DefaultPath(".")]
+      public Directory $source,
+      public string $version = '8.3'
+  ) {
+  }
+
     #[DaggerFunction]
     #[Doc('Returns a PHP env with dependencies and source code')]
-    public function env(
-      #[DefaultPath(".")]
-      Directory $source,
-    ): Container
+    public function env(): Container
     {
         return dag()
             ->container()
-            // use php 8.3 base image
-            ->from('php:8.3-cli')
+            // use php base image
+            ->from('php:' . $this->version . '-cli')
             // mount caches
             ->withMountedCache("/root/.composer", dag()->cacheVolume("composer-php83"))
             ->withMountedCache("/var/cache/apt", dag()->cacheVolume("apt"))
@@ -39,7 +45,7 @@ class SymfonySampleApp
             // install composer
             ->withExec(["sh", "-c", "curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer"])
             // mount source code and set workdir
-            ->withDirectory("/app", $source->withoutDirectory(".dagger"))
+            ->withDirectory("/app", $this->source->withoutDirectory(".dagger"))
             ->withWorkdir("/app")
             // install app deps
             ->withExec(["composer", "install"])
@@ -49,10 +55,7 @@ class SymfonySampleApp
 
     #[DaggerFunction]
     #[Doc('Returns the result of unit tests and static analysis')]
-    public function test(
-      #[DefaultPath(".")]
-      Directory $source,
-    ): string {
+    public function test(): string {
 
         $mariadb = dag()
             ->container()
@@ -67,7 +70,7 @@ class SymfonySampleApp
             ->asService([], true);
 
         return $this
-            ->env($source)
+            ->env()
             // bind to mariadb service
             ->withServiceBinding('db', $mariadb)
             // set env=test
@@ -87,12 +90,9 @@ class SymfonySampleApp
 
     #[DaggerFunction]
     #[Doc('Returns the result of linting')]
-    public function lint(
-      #[DefaultPath('.')]
-      Directory $source,
-    ): string {
+    public function lint(): string {
         return $this
-            ->env($source)
+            ->env()
             // install linter
             ->withExec(['composer', 'require', '--dev', 'friendsofphp/php-cs-fixer'])
             // run linter
@@ -102,17 +102,14 @@ class SymfonySampleApp
 
     #[DaggerFunction]
     #[Doc('Publishes the application')]
-    public function publish(
-      #[DefaultPath(".")]
-      Directory $source,
-    ): string {
+    public function publish(): string {
         // lint
-        $this->lint($source);
+        $this->lint();
         // run unit tests and static analysis
-        $this->test($source);
+        $this->test();
         // set entrypoint and publish
         return $this
-            ->env($source)
+            ->env()
             ->withEntrypoint(['/root/.symfony5/bin/symfony', 'server:start', '--port=8000', '--listen-ip=0.0.0.0'])
             ->publish('ttl.sh/symfony-sample-app-'  . rand(0, 100000));
     }

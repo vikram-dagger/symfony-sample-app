@@ -80,6 +80,8 @@ cd my_project/
 ./bin/phpunit
 ```
 
+You can also [lint, test and perform static analysis with Dagger](./.dagger/README.md).
+
 [1]: https://symfony.com/doc/current/best_practices.html
 [2]: https://symfony.com/doc/current/setup.html#technical-requirements
 [3]: https://symfony.com/doc/current/setup/web_server_configuration.html
